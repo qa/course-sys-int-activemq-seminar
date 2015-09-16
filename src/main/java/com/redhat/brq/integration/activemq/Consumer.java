@@ -7,10 +7,11 @@ import com.redhat.brq.integration.activemq.util.XmlConverter;
 import com.redhat.brq.integration.activemql.model.Job;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.xml.bind.JAXBException;
@@ -22,30 +23,19 @@ import java.util.concurrent.TimeUnit;
  *
  */
 public class Consumer {
-	private static final int TIMEOUT = 5 * 1000;
-
-	private ConnectionFactory connectionFactory;
 	private String destinationName;
 
-	public Consumer(ConnectionFactory connectionFactory, String destinationName) {
+	private Connection connection;
+
+	public Consumer(Connection connection, String destinationName) {
 		super();
-		this.connectionFactory = connectionFactory;
+		this.connection = connection;
 		this.destinationName = destinationName;
 	}
 
 	public void consumeMessages() throws JMSException, InterruptedException {
 
-		/*
-		 * TODO:
-		 * 1) create Connection, Session, Destination and MessageConsumer objects
-		 * 2) start the connection
-		 * 3) synchronously receive messages in loop until no message is received.
-		 * Do not forget to specify timeout for receive method (5 seconds should be enough).
-		 * 4) extract job from message using XmlConverter and then execute job
-		 */
-		Connection connection = null;
 		try {
-			connection = connectionFactory.createConnection();
 			// create nontransacted session with auto acknowledge mode
 			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -54,25 +44,29 @@ public class Consumer {
 			// create consumer
 			MessageConsumer consumer = session.createConsumer(destination);
 
+			consumer.setMessageListener(new MessageListener() {
+
+				@Override
+				public void onMessage(Message m) {
+					try {
+						String jobXml = ((TextMessage) m).getText();
+						Job job = (Job) XmlConverter.toObject(Job.class, jobXml);
+						executeJob(job);
+					} catch (JMSException e) {
+						e.printStackTrace();
+					} catch (JAXBException e) {
+						e.printStackTrace();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+
+				}
+			});
+
 			connection.start();
 
-			// synchronously receive messages until there are no messages in queue
-			while (true) {
-				TextMessage jobMessage = (TextMessage) consumer.receive(TIMEOUT);
-				if (jobMessage == null) {
-					break;
-				}
-				Job job = (Job) XmlConverter.toObject(Job.class, jobMessage.getText());
-				executeJob(job);
-			}
 		} catch (JMSException e) {
 			e.printStackTrace();
-		} catch (JAXBException e) {
-			e.printStackTrace();
-		} finally {
-			if (connection != null) {
-				connection.close();
-			}
 		}
 	}
 
@@ -90,4 +84,9 @@ public class Consumer {
 		System.out.println(str.toString());
 		TimeUnit.SECONDS.sleep(job.getDuration());
 	}
+
+	public Connection getConnection() {
+		return connection;
+	}
+
 }

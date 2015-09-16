@@ -13,6 +13,7 @@ import org.apache.commons.cli.ParseException;
 
 import com.redhat.brq.integration.activemq.util.JmxUtils;
 
+import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 
 /**
@@ -44,9 +45,12 @@ public class Main {
 
 		// consumer execution
 		if (cmd.hasOption("c")) {
-			Consumer consumer = new Consumer(connectionFactory, destinationName);
+			Connection connection = connectionFactory.createConnection();
+			Consumer consumer = new Consumer(connection, destinationName);
+			connection.start();
 			consumer.consumeMessages();
 			new JmxUtils().waitUntilQueueIsEmpty(destinationName);
+			connection.close();
 		}
 
 	}
