@@ -28,10 +28,13 @@ public class Consumer implements Runnable {
 
 	private Connection connection;
 
-	public Consumer(Connection connection, String destinationName) {
+	private String selector;
+
+	public Consumer(Connection connection, String destinationName, String selector) {
 		super();
 		this.connection = connection;
 		this.destinationName = destinationName;
+		this.selector = selector;
 	}
 
 
@@ -61,7 +64,7 @@ public class Consumer implements Runnable {
 			// get destination object
 			Destination destination = session.createQueue(destinationName);
 			// create consumer
-			MessageConsumer consumer = session.createConsumer(destination);
+			MessageConsumer consumer = session.createConsumer(destination, selector);
 
 			consumer.setMessageListener(new MessageListener() {
 

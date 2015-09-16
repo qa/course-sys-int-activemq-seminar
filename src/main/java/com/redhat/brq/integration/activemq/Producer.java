@@ -63,6 +63,7 @@ public class Producer {
 				int duration = random.nextInt(Job.MAX_DURATION) + 1;
 				Job job = new Job("Job " + (i + 1), duration);
 				Message message = session.createTextMessage(XmlConverter.toXml(Job.class, job));
+				message.setIntProperty("DURATION", job.getDuration());
 				System.out.println("Producer: sending: " + job.toString() + " to destination " + destinationName);
 
 				// synchronously send message
