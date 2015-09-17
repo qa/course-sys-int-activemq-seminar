@@ -49,7 +49,7 @@ public class Producer {
 			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 			// get destination object based on name
-			Destination destination = session.createQueue(destinationName);
+			Destination destination = session.createTopic(destinationName);
 			MessageProducer producer = session.createProducer(destination);
 
 			// set nonpersistent delivery mode

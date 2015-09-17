@@ -3,6 +3,7 @@
  */
 package com.redhat.brq.integration.activemq;
 
+import com.redhat.brq.integration.activemq.util.JmxUtils;
 import com.redhat.brq.integration.activemq.util.XmlConverter;
 import com.redhat.brq.integration.activemql.model.Job;
 
@@ -43,14 +44,7 @@ public class Consumer implements Runnable {
 			e.printStackTrace();
 		}
 
-		while (true){
-			try {
-				TimeUnit.SECONDS.sleep(1);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		new JmxUtils().waitUntilInterrupted();
 	}
 
 
@@ -62,7 +56,7 @@ public class Consumer implements Runnable {
 			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 			// get destination object
-			Destination destination = session.createQueue(destinationName);
+			Destination destination = session.createTopic(destinationName);
 			// create consumer
 			MessageConsumer consumer = session.createConsumer(destination);
 
