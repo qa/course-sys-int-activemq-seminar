@@ -43,7 +43,37 @@ public class Consumer {
 		 * Do not forget to specify timeout for receive method (5 seconds should be enough).
 		 * 4) extract job from message using XmlConverter and then execute job
 		 */
+		Connection connection = null;
+		try {
+			connection = connectionFactory.createConnection();
+			// create nontransacted session with auto acknowledge mode
+			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
+			// get destination object
+			Destination destination = session.createQueue(destinationName);
+			// create consumer
+			MessageConsumer consumer = session.createConsumer(destination);
+
+			connection.start();
+
+			// synchronously receive messages until there are no messages in queue
+			while (true) {
+				TextMessage jobMessage = (TextMessage) consumer.receive(TIMEOUT);
+				if (jobMessage == null) {
+					break;
+				}
+				Job job = (Job) XmlConverter.toObject(Job.class, jobMessage.getText());
+				executeJob(job);
+			}
+		} catch (JMSException e) {
+			e.printStackTrace();
+		} catch (JAXBException e) {
+			e.printStackTrace();
+		} finally {
+			if (connection != null) {
+				connection.close();
+			}
+		}
 	}
 
 	/**
