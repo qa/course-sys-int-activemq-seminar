@@ -7,6 +7,7 @@ import com.redhat.brq.integration.activemq.util.JmxUtils;
 import com.redhat.brq.integration.activemq.util.XmlConverter;
 import com.redhat.brq.integration.activemql.model.Job;
 
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -14,7 +15,6 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.xml.bind.JAXBException;
 
 import java.util.concurrent.TimeUnit;
@@ -65,7 +65,9 @@ public class Consumer implements Runnable {
 				@Override
 				public void onMessage(Message m) {
 					try {
-						String jobXml = ((TextMessage) m).getText();
+
+						BytesMessage bytesMessage = ((BytesMessage) m);
+						String jobXml = convertByteMessageToString(bytesMessage);
 						Job job = (Job) XmlConverter.toObject(Job.class, jobXml);
 						executeJob(job);
 					} catch (JMSException e) {
@@ -76,6 +78,16 @@ public class Consumer implements Runnable {
 						e.printStackTrace();
 					}
 
+				}
+
+				private String convertByteMessageToString(BytesMessage bytesMessage) throws JMSException {
+					byte[] byteArr = new byte[(int)bytesMessage.getBodyLength()];
+
+					for (int i = 0; i < (int) bytesMessage.getBodyLength(); i++) {
+						byteArr[i] = bytesMessage.readByte();
+					}
+					String msg = new String(byteArr);
+					return msg;
 				}
 			});
 
