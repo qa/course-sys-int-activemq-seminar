@@ -3,6 +3,7 @@
  */
 package com.redhat.brq.integration.activemq;
 
+import com.redhat.brq.integration.activemq.util.JmxUtils;
 import com.redhat.brq.integration.activemq.util.XmlConverter;
 import com.redhat.brq.integration.activemql.model.Job;
 
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * @author jknetl
  *
  */
-public class Consumer {
+public class Consumer implements Runnable {
 	private String destinationName;
 
 	private Connection connection;
@@ -32,6 +33,24 @@ public class Consumer {
 		this.connection = connection;
 		this.destinationName = destinationName;
 	}
+
+
+	@Override
+	public void run() {
+		try {
+			consumeMessages();
+		} catch (JMSException | InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			new JmxUtils().waitUntilQueueIsEmpty(destinationName);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+
 
 	public void consumeMessages() throws JMSException, InterruptedException {
 
@@ -88,5 +107,6 @@ public class Consumer {
 	public Connection getConnection() {
 		return connection;
 	}
+
 
 }

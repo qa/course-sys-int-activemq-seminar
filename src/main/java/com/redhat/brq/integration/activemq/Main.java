@@ -48,7 +48,7 @@ public class Main {
 			Connection connection = connectionFactory.createConnection();
 			Consumer consumer = new Consumer(connection, destinationName);
 			connection.start();
-			consumer.consumeMessages();
+			new Thread(consumer).start();
 			new JmxUtils().waitUntilQueueIsEmpty(destinationName);
 			connection.close();
 		}
