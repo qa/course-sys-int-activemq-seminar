@@ -17,6 +17,7 @@ import javax.jms.Session;
 import javax.xml.bind.JAXBException;
 
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author jknetl
@@ -39,7 +40,7 @@ public class Producer {
 	 * @param count number of message generated
 	 * @throws JMSException
 	 */
-	public void produceMessages(int count) throws JMSException {
+	public void produceMessages() throws JMSException {
 		Connection connection = null;
 		Session session;
 		try{
@@ -58,7 +59,8 @@ public class Producer {
 			// start connection
 			connection.start();
 
-			for (int i = 0; i < count; i++) {
+			int i = 0;
+			while (true) {
 				Random random = new Random(System.currentTimeMillis());
 				int duration = random.nextInt(Job.MAX_DURATION) + 1;
 				Job job = new Job("Job " + (i + 1), duration);
@@ -67,10 +69,14 @@ public class Producer {
 
 				// synchronously send message
 				producer.send(message);
+				try {
+					TimeUnit.SECONDS.sleep(1);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				i++;
 			}
 
-			producer.close();
-			session.close();
 		} catch (JMSException e) {
 			e.printStackTrace();
 		} catch (JAXBException e) {

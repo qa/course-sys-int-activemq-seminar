@@ -39,7 +39,7 @@ public class Main {
 		// producer execution
 		if (cmd.hasOption("p")) {
 			Producer producer = new Producer(connectionFactory, destinationName);
-			producer.produceMessages(messageCount);
+			producer.produceMessages();
 		}
 
 		// consumer execution
