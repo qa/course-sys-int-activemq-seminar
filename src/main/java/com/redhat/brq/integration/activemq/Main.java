@@ -46,13 +46,14 @@ public class Main {
 		// consumer execution
 		if (cmd.hasOption("c")) {
 			Connection connection = connectionFactory.createConnection();
-			Consumer shortJobsConsumer = new Consumer(connection, destinationName, "DURATION <= 5");
-			Consumer longJobsConsumer = new Consumer(connection, destinationName, "DURATION > 5");
+			Consumer consumerA = new Consumer(connection, destinationName);
+			Consumer consumerB = new Consumer(connection, destinationName);
 
 			connection.start();
-			new Thread(shortJobsConsumer).start();
-			new Thread(longJobsConsumer).start();
-			new JmxUtils().waitUntilQueueIsEmpty(destinationName);
+			new Thread(consumerA).start();
+			new Thread(consumerB).start();
+
+			new JmxUtils().waitUntilInterrupted();
 			connection.close();
 		}
 

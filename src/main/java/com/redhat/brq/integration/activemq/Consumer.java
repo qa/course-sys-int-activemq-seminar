@@ -3,7 +3,6 @@
  */
 package com.redhat.brq.integration.activemq;
 
-import com.redhat.brq.integration.activemq.util.JmxUtils;
 import com.redhat.brq.integration.activemq.util.XmlConverter;
 import com.redhat.brq.integration.activemql.model.Job;
 
@@ -28,13 +27,11 @@ public class Consumer implements Runnable {
 
 	private Connection connection;
 
-	private String selector;
 
-	public Consumer(Connection connection, String destinationName, String selector) {
+	public Consumer(Connection connection, String destinationName) {
 		super();
 		this.connection = connection;
 		this.destinationName = destinationName;
-		this.selector = selector;
 	}
 
 
@@ -46,10 +43,13 @@ public class Consumer implements Runnable {
 			e.printStackTrace();
 		}
 
-		try {
-			new JmxUtils().waitUntilQueueIsEmpty(destinationName);
-		} catch (Exception e) {
-			e.printStackTrace();
+		while (true){
+			try {
+				TimeUnit.SECONDS.sleep(1);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -64,7 +64,7 @@ public class Consumer implements Runnable {
 			// get destination object
 			Destination destination = session.createQueue(destinationName);
 			// create consumer
-			MessageConsumer consumer = session.createConsumer(destination, selector);
+			MessageConsumer consumer = session.createConsumer(destination);
 
 			consumer.setMessageListener(new MessageListener() {
 
