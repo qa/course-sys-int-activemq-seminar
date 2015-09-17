@@ -59,11 +59,11 @@ public class Consumer {
 			// synchronously receive messages until there are no messages in queue
 			while (true) {
 				TextMessage jobMessage = (TextMessage) consumer.receive(TIMEOUT);
-				if (jobMessage == null) {
-					break;
+				if (jobMessage != null) {
+					Job job = (Job) XmlConverter.toObject(Job.class, jobMessage.getText());
+					executeJob(job);
 				}
-				Job job = (Job) XmlConverter.toObject(Job.class, jobMessage.getText());
-				executeJob(job);
+
 			}
 		} catch (JMSException e) {
 			e.printStackTrace();

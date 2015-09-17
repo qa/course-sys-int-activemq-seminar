@@ -46,7 +46,6 @@ public class Main {
 		if (cmd.hasOption("c")) {
 			Consumer consumer = new Consumer(connectionFactory, destinationName);
 			consumer.consumeMessages();
-			new JmxUtils().waitUntilQueueIsEmpty(destinationName);
 		}
 
 	}

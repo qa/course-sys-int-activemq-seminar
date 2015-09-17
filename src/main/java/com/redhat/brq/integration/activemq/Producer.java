@@ -53,7 +53,7 @@ public class Producer {
 			MessageProducer producer = session.createProducer(destination);
 
 			// set nonpersistent delivery mode
-			producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+			producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
 			// start connection
 			connection.start();
